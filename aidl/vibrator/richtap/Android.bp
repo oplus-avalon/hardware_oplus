@@ -10,7 +10,10 @@ cc_binary {
         "-Wall",
         "-Werror",
         "-DLOG_TAG=\"android.hardware.vibrator.service.oplus\"",
-    ] + select(soong_config_variable("OPLUS_LINEAGE_VIBRATOR_HAL", "USES_OPLUS_AWINIC"), {
+    ] + select(soong_config_variable("OPLUS_LINEAGE_VIBRATOR_HAL", "USE_RICHTAP_EFFECT_REMAP"), {
+        true: ["-DUSE_RICHTAP_EFFECT_REMAP"],
+        default: [], 
+    }) + select(soong_config_variable("OPLUS_LINEAGE_VIBRATOR_HAL", "USES_OPLUS_AWINIC"), {
         true: ["-DUSES_OPLUS_AWINIC"],
         default: [],
     }),
