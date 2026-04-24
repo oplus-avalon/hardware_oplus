@@ -115,6 +115,7 @@ class KeyHandler(private val context: Context) : DeviceKeyHandler {
     private fun handleMode(position: Int, firstRun: Boolean) {
         val muteMedia = sharedPreferences.getBoolean(MUTE_MEDIA_WITH_SILENT, false)
         val showDialog = sharedPreferences.getBoolean(SHOW_DIALOG, true)
+        val invertColors = sharedPreferences.getBoolean(INVERT_COLORS, false)
 
         val mode =
             when (position) {
@@ -168,7 +169,7 @@ class KeyHandler(private val context: Context) : DeviceKeyHandler {
             }
 
             if (!firstRun) {
-                if (showDialog) sendNotification(position, mode)
+                if (showDialog) sendNotification(position, mode, invertColors)
                 vibrateIfNeeded(mode)
             }
         }
@@ -184,11 +185,12 @@ class KeyHandler(private val context: Context) : DeviceKeyHandler {
         }
     }
 
-    private fun sendNotification(position: Int, mode: Int) {
+    private fun sendNotification(position: Int, mode: Int, invertColors: Boolean) {
         context.sendBroadcast(
             Intent(CHANGED_ACTION).apply {
                 putExtra("position", position)
                 putExtra("mode", mode)
+                putExtra("invertColors", invertColors)
             }
         )
     }
@@ -210,6 +212,7 @@ class KeyHandler(private val context: Context) : DeviceKeyHandler {
         private const val ALERT_SLIDER_BOTTOM_KEY = "config_bottom_position"
         private const val MUTE_MEDIA_WITH_SILENT = "config_mute_media"
         private const val SHOW_DIALOG = "config_show_dialog"
+        private const val INVERT_COLORS = "config_invert_colors"
 
         // ZEN constants
         private const val ZEN_OFFSET = 2

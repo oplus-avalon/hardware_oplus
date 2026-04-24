@@ -119,7 +119,12 @@ class AlertSliderDialog(private val context: Context, private val sysuiContext: 
     }
 
     @Synchronized
-    fun setState(position: Int, ringerMode: Int, packageName: String? = null) {
+    fun setState(
+        position: Int,
+        ringerMode: Int,
+        invertColors: Boolean = false,
+        packageName: String? = null,
+    ) {
         val delta =
             length *
                 when (position) {
@@ -133,9 +138,9 @@ class AlertSliderDialog(private val context: Context, private val sysuiContext: 
         if (isLandscape) endX += delta else endY += delta
 
         if (isShowing) {
-            animatePosition(endX, endY, position, ringerMode, packageName)
+            animatePosition(endX, endY, position, ringerMode, invertColors, packageName)
         } else {
-            applyUiMode(ringerMode, packageName)
+            applyUiMode(ringerMode, invertColors, packageName)
             applyPositionAndBackground(endX, endY, position)
         }
     }
@@ -146,6 +151,7 @@ class AlertSliderDialog(private val context: Context, private val sysuiContext: 
         endY: Int,
         position: Int,
         ringerMode: Int,
+        invertColors: Boolean,
         packageName: String? = null,
     ) {
         if (isAnimating) animator.cancel()
@@ -174,7 +180,7 @@ class AlertSliderDialog(private val context: Context, private val sysuiContext: 
             object : Animator.AnimatorListener {
                 override fun onAnimationStart(animation: Animator) {
                     isAnimating = true
-                    applyUiMode(ringerMode, packageName)
+                    applyUiMode(ringerMode, invertColors, packageName)
                     val transition =
                         TransitionDrawable(
                             arrayOf(
@@ -203,7 +209,7 @@ class AlertSliderDialog(private val context: Context, private val sysuiContext: 
         animator.start()
     }
 
-    private fun applyUiTheme() {
+    private fun applyUiTheme(invertColors: Boolean) {
         val currentUiMode = sysuiContext.resources.configuration.uiMode
         val isDark =
             (currentUiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) ==
@@ -226,12 +232,19 @@ class AlertSliderDialog(private val context: Context, private val sysuiContext: 
         val bgColor = sysuiContext.getColor(bgResId)
         val accentColor = sysuiContext.getColor(accentResId)
 
-        frameView.backgroundTintList = ColorStateList.valueOf(bgColor)
-        iconView.imageTintList = ColorStateList.valueOf(accentColor)
-        textView.setTextColor(accentColor)
+        val activeFg = if (invertColors) bgColor else accentColor
+        val activeBg = if (invertColors) accentColor else bgColor
+
+        textView.setTextColor(activeFg)
+        iconView.imageTintList = ColorStateList.valueOf(activeFg)
+        frameView.backgroundTintList = ColorStateList.valueOf(activeBg)
     }
 
-    private fun applyUiMode(ringerMode: Int, packageName: String? = null) {
+    private fun applyUiMode(
+        ringerMode: Int,
+        invertColors: Boolean,
+        packageName: String? = null,
+    ) {
         when (ringerMode) {
             AudioManager.RINGER_MODE_SILENT, MODE_SILENT -> {
                 iconView.setImageResource(R.drawable.ic_volume_ringer_mute)
@@ -318,7 +331,7 @@ class AlertSliderDialog(private val context: Context, private val sysuiContext: 
                 textView.setText(R.string.alert_slider_mode_none)
             }
         }
-        applyUiTheme()
+        applyUiTheme(invertColors)
     }
 
     private fun applyPositionAndBackground(endX: Int, endY: Int, position: Int) {

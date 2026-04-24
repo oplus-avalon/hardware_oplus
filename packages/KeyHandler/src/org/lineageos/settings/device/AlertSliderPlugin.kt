@@ -27,7 +27,12 @@ class AlertSliderPlugin : OverlayPlugin {
     private lateinit var handler: NotificationHandler
     private val dialogLock = Any()
 
-    private data class NotificationInfo(val position: Int, val mode: Int, val packageName: String? = null)
+    private data class NotificationInfo(
+        val position: Int,
+        val mode: Int,
+        val packageName: String? = null,
+        val invertColors: Boolean = false,
+    )
 
     private val updateReceiver: BroadcastReceiver =
         object : BroadcastReceiver() {
@@ -41,12 +46,18 @@ class AlertSliderPlugin : OverlayPlugin {
                             val ringer =
                                 intent.getIntExtra("mode", NONE).takeIf { it != NONE } ?: return
 
+                            val invert = intent.getBooleanExtra("invertColors", false)
+
                             handler
                                 .obtainMessage(
                                     MSG_DIALOG_UPDATE,
                                     NotificationInfo(
-                                        intent.getIntExtra("position", KeyHandler.POSITION_BOTTOM),
-                                        ringer,
+                                        position = intent.getIntExtra(
+                                            "position",
+                                            KeyHandler.POSITION_BOTTOM,
+                                        ),
+                                        mode = ringer,
+                                        invertColors = invert,
                                     ),
                                 )
                                 .sendToTarget()
@@ -71,9 +82,9 @@ class AlertSliderPlugin : OverlayPlugin {
                                 .obtainMessage(
                                     MSG_DIALOG_UPDATE,
                                     NotificationInfo(
-                                        position,
-                                        mode,
-                                        pkg,
+                                        position = position,
+                                        mode = mode,
+                                        packageName = pkg,
                                     ),
                                 )
                                 .sendToTarget()
@@ -170,7 +181,7 @@ class AlertSliderPlugin : OverlayPlugin {
                 lastInfo = info
                 handleResetTimeout()
                 launchDozePulse()
-                dialog.setState(info.position, info.mode, info.packageName)
+                dialog.setState(info.position, info.mode, info.invertColors, info.packageName)
             }
         }
 
@@ -190,7 +201,7 @@ class AlertSliderPlugin : OverlayPlugin {
 
                 showing = false
                 dialog = AlertSliderDialog(context, sysuiContext)
-                lastInfo?.let { dialog.setState(it.position, it.mode, it.packageName) }
+                lastInfo?.let { dialog.setState(it.position, it.mode, it.invertColors, it.packageName) }
 
                 if (wasShowing) {
                     showing = true
