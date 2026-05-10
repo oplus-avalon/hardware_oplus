@@ -246,6 +246,10 @@ ndk::ScopedAStatus Vibrator::perform(Effect effect, EffectStrength es,
             return ndk::ScopedAStatus(AStatus_fromExceptionCode(EX_UNSUPPORTED_OPERATION));
     }
 
+    if (effect == Effect::TICK) {
+        strength = strength * 60 / 100;
+    }
+
 #ifdef USE_RICHTAP_EFFECT_REMAP
     auto mappedEffect = mapEffectToPrebakedId(effect);
     if (!mappedEffect.has_value()) {
