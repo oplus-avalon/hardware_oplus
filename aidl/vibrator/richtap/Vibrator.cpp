@@ -218,16 +218,16 @@ ndk::ScopedAStatus Vibrator::on(int32_t timeoutMs,
 #ifdef USE_RICHTAP_EFFECT_REMAP
 std::optional<uint32_t> mapEffectToPrebakedId(Effect effect) {
     switch (effect) {
-        case Effect::CLICK:
-        case Effect::DOUBLE_CLICK:
+        case Effect::TEXTURE_TICK:
         case Effect::TICK:
-            return static_cast<uint32_t>(effect) + 0x1000;
-
+        case Effect::CLICK:
+            return 0x3009;
+        case Effect::HEAVY_CLICK:
         case Effect::THUD:
         case Effect::POP:
-        case Effect::HEAVY_CLICK:
-            return static_cast<uint32_t>(effect) + 0x3002;
-
+            return 0x3001;
+        case Effect::DOUBLE_CLICK:
+            return 0x3002;
         default:
             return std::nullopt;
     }
@@ -239,8 +239,10 @@ ndk::ScopedAStatus Vibrator::perform(Effect effect, EffectStrength es,
                                      int32_t* _aidl_return) {
     int32_t strength;
 
+#ifndef USE_RICHTAP_EFFECT_REMAP
     if (effect < Effect::CLICK || effect > Effect::HEAVY_CLICK)
         return ndk::ScopedAStatus(AStatus_fromExceptionCode(EX_UNSUPPORTED_OPERATION));
+#endif
 
     switch (es) {
         case EffectStrength::LIGHT:
@@ -291,8 +293,13 @@ ndk::ScopedAStatus Vibrator::perform(Effect effect, EffectStrength es,
 }
 
 ndk::ScopedAStatus Vibrator::getSupportedEffects(std::vector<Effect>* _aidl_return) {
+#ifdef USE_RICHTAP_EFFECT_REMAP
+    *_aidl_return = {Effect::CLICK, Effect::DOUBLE_CLICK, Effect::TICK,        Effect::THUD,
+                     Effect::POP,   Effect::HEAVY_CLICK,  Effect::TEXTURE_TICK};
+#else
     *_aidl_return = {Effect::CLICK, Effect::DOUBLE_CLICK, Effect::TICK,
                      Effect::THUD,  Effect::POP,          Effect::HEAVY_CLICK};
+#endif
 
     return ndk::ScopedAStatus::ok();
 }
