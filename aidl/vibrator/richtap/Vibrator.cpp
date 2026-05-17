@@ -258,6 +258,19 @@ ndk::ScopedAStatus Vibrator::perform(Effect effect, EffectStrength es,
             return ndk::ScopedAStatus(AStatus_fromExceptionCode(EX_UNSUPPORTED_OPERATION));
     }
 
+    // --- PER EFFECT STRENGTH TUNING ---
+    if (effect == Effect::TICK) {
+        strength = strength * 20 / 100;
+    } else if (effect == Effect::TEXTURE_TICK) {
+        strength = strength * 15 / 100;
+    } else if (effect == Effect::CLICK) {
+        strength = strength * 15 / 100;
+    } else if (effect == Effect::POP) {
+        strength = strength * 30 / 100;
+    } else if (effect == Effect::HEAVY_CLICK || effect == Effect::THUD || effect == Effect::DOUBLE_CLICK) {
+        strength = strength * 60 / 100;
+    }
+
     if (sLastMode == MODE_STREAM) aac_vibra_setAmplitude(0xFF);
 
 #ifdef USE_RICHTAP_EFFECT_REMAP
