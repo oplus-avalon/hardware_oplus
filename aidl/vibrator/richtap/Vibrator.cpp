@@ -260,7 +260,7 @@ ndk::ScopedAStatus Vibrator::perform(Effect effect, EffectStrength es,
 
     // --- PER EFFECT STRENGTH TUNING ---
     if (effect == Effect::TICK) {
-        strength = strength * 20 / 100;
+        strength = strength * 15 / 100;
     } else if (effect == Effect::TEXTURE_TICK) {
         strength = strength * 15 / 100;
     } else if (effect == Effect::CLICK) {
