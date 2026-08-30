@@ -41,6 +41,7 @@ class KeyHandler(private val context: Context) : DeviceKeyHandler {
     private val executorService = Executors.newSingleThreadExecutor()
 
     private var wasMuted = false
+    private var lastPosition = -1
     private val broadcastReceiver =
         object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
@@ -86,11 +87,20 @@ class KeyHandler(private val context: Context) : DeviceKeyHandler {
     }
 
     private fun populateKeyState(firstRun: Boolean) {
-        when (File("/proc/tristatekey/tri_state").readText().trim()) {
-            "1" -> handleMode(POSITION_TOP, firstRun)
-            "2" -> handleMode(POSITION_MIDDLE, firstRun)
-            "3" -> handleMode(POSITION_BOTTOM, firstRun)
+        val position =
+            when (File("/proc/tristatekey/tri_state").readText().trim()) {
+                "1" -> POSITION_TOP
+                "2" -> POSITION_MIDDLE
+                "3" -> POSITION_BOTTOM
+                else -> return
+            }
+
+        if (!firstRun && position == lastPosition) {
+            return
         }
+
+        lastPosition = position
+        handleMode(position, firstRun)
     }
 
     private fun vibrateIfNeeded(mode: Int) {
