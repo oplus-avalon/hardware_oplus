@@ -20,7 +20,6 @@ vendor_internal_prop(vendor_oplus_se_prop)
 vendor_internal_prop(vendor_thermal_engine_prop)
 
 # Touch
-vendor_internal_prop(vendor_oplus_touch_prop)
 
 # URCC
 vendor_internal_prop(vendor_oplus_urcc_prop)
