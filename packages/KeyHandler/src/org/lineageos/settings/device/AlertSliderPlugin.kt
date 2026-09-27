@@ -146,6 +146,21 @@ class AlertSliderPlugin : OverlayPlugin {
 
         private fun handleUpdate(info: NotificationInfo) {
             synchronized(dialogLock) {
+                // The tri-state key can report its current position multiple times
+                // in a row (e.g. while the device is being moved/tilted) without an
+                // actual physical slider movement. Both CHANGED_ACTION and
+                // ACTION_UPDATE_SLIDER_POSITION can deliver these repeats, and
+                // ACTION_UPDATE_SLIDER_POSITION in particular has no dedup of its
+                // own upstream. Without this guard, every repeat cancels and
+                // restarts the dismiss timer below, which is what makes the dialog
+                // linger or reappear on movement instead of auto-dismissing.
+                // Ignore true duplicates while the dialog is already showing the
+                // same state so the auto-dismiss timer isn't kept getting pushed
+                // back by noise.
+                if (info == lastInfo && showing) {
+                    return
+                }
+
                 lastInfo = info
                 handleResetTimeout()
                 launchDozePulse()
